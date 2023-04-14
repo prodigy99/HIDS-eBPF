@@ -105,6 +105,13 @@ make clear  # 或者 make clean
 
 </p></details>
 
+# Reference
+使用的库与参考的代码实现
+
+[libbpf-bootstrap](https://github.com/libbpf/libbpf-bootstrap)
+
+[cJSON lib](https://github.com/DaveGamble/cJSON)
+
 # todo
 
 #### todolist
