@@ -9,6 +9,7 @@
 #include "hids.h"
 #include "config.h"
 #include "hids.skel.h"
+#include "cJSON.h"
 
 // com_funaddr.c 中的库函数
 int do_so_check(void);
@@ -253,6 +254,79 @@ static void get_proc_pid(const char* buf, char* pid){
 	}
 }
 
+// struct cJSON *out = json_format(e, "", "");
+// char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+// printf("%s\n",json_data);//输出字符串
+// cJSON_Delete(out);//清除结构体
+static cJSON *json_format(const struct event *e, char *event_type_s, char *message)
+{	
+	char ts[32];
+	struct tm *tm;
+	time_t t;
+	time(&t);
+	tm = localtime(&t);
+	strftime(ts, sizeof(ts), "%H:%M:%S", tm);
+
+	struct cJSON *msg = cJSON_CreateObject();	//创建一个对象
+	cJSON_AddStringToObject(msg, "time", ts);
+	cJSON_AddNumberToObject(msg,"event_type",e->event_type);
+	cJSON_AddStringToObject(msg, "event_type_s", event_type_s);
+	cJSON_AddNumberToObject(msg,"pid",e->pid);
+	cJSON_AddNumberToObject(msg,"ppid",e->ppid);
+	cJSON_AddNumberToObject(msg,"pid_ns",e->pid_ns);
+	// add cap_effective
+	struct cJSON *cap  = cJSON_CreateObject();				//创建一个对象
+	// cJSON_AddNumberToObject(cap,"[0]",e->cap_effective[0]);	
+	// cJSON_AddNumberToObject(cap,"[1]",e->cap_effective[1]);
+	char str[64] = {0};
+	sprintf(str, "%x", e->cap_effective[0]); 
+	cJSON_AddStringToObject(cap, "[0]", str);
+	sprintf(str, "%x", e->cap_effective[1]); 
+ 	cJSON_AddStringToObject(cap, "[1]", str);
+	cJSON_AddItemToObject(msg,"cap_effective",cap);		
+
+	cJSON_AddNumberToObject(msg,"sig",e->sig);
+	struct cJSON *uid  = cJSON_CreateObject();				//创建一个对象
+	cJSON_AddNumberToObject(uid,"old_uid",e->old_uid); 		
+ 	cJSON_AddNumberToObject(uid,"new_uid",e->new_uid);
+	sprintf(str, "%x", e->old_uid); 
+	cJSON_AddStringToObject(uid, "old_uid", str);
+	sprintf(str, "%x", e->new_uid); 
+ 	cJSON_AddStringToObject(uid, "new_uid", str);
+	cJSON_AddItemToObject(msg,"uid",uid);	
+
+	cJSON_AddStringToObject(msg, "comm", e->comm);
+	cJSON_AddStringToObject(msg, "utsnodename", e->utsnodename);
+	cJSON_AddStringToObject(msg, "filename", e->filename);
+	cJSON_AddStringToObject(msg, "mount_dir", e->mount_dir);
+	cJSON_AddStringToObject(msg, "mount_dev", e->mount_dev);
+
+	cJSON_AddStringToObject(msg, "message", message);
+	// cJSON_AddFalseToObject(msg,"gender");			//添加逻辑值false
+	// cJSON_AddStringToObject
+	return msg;
+}
+// struct event {
+//  unsigned int event_type;
+// 	int pid;
+// 	int ppid;
+// 	unsigned long pid_ns;
+// 	int cap_effective[2];
+// 	int sig;
+// 	unsigned int new_uid;
+// 	unsigned int old_uid;
+// 	char comm[TASK_COMM_LEN];
+// 	char utsnodename[MAX_KSYM_NAME_SIZE];
+// 	char filename[MAX_FILENAME_LEN];
+// 	char mount_dir[MAX_PATH_NAME_SIZE];
+// 	char mount_dev[MAX_PATH_NAME_SIZE];
+// };
+// unsigned int event_type, int pid, int ppid, unsigned long pid_ns,
+// 							int cap_effective[2], int sig, unsigned int new_uid, unsigned int old_uid, char comm[TASK_COMM_LEN],
+// 							char utsnodename[MAX_KSYM_NAME_SIZE], char filename[MAX_FILENAME_LEN], 
+// 							char mount_dir[MAX_PATH_NAME_SIZE], char mount_dev[MAX_PATH_NAME_SIZE]
+// struct cJSON *TCP = cJSON_CreateObject();				
+
 /// 根据PID对应的进程是否运行在容器中 0:不运行于容器中 1：运行于容器中
 static int judge_run_in_docker(int pid, unsigned long pid_ns){
 	// 进程PID-ns与主机侧相同，不运行在容器中
@@ -324,6 +398,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 		{
 			fprintf(stderr, /*printf(*/"%-8s %-20s %-20s %-7d %-7d %-10ld  ELF no file attacked ! uname:%s \n",
 			ts, "SYS_ENTER_MEMFD_CREATE", e->comm, e->pid, e->ppid, e->pid_ns, e->filename);
+			struct cJSON *out = json_format(e, "SYS_ENTER_MEMFD_CREATE", "Find ELF no file attacked.");
+			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+			printf("%s\n",json_data);//输出字符串
+			cJSON_Delete(out);//清除结构体
 			break;
 		}
 	// 进程变化
@@ -342,6 +420,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 			fprintf(stderr, /*printf(*/"%-8s %-20s %-20s %-7d %-7d %-10ld  load module, module-name is %s !\n",
 				ts, "MODULE_LOAD", e->comm, e->pid, e->ppid, e->pid_ns, module_name);
 			// bpf_map__lookup_elem(pid_conid_map_u, &pid, sizeof(pid), containerid, MAX_PATH_NAME_SIZE, BPF_ANY);
+			struct cJSON *out = json_format(e, "MODULE_LOAD", "Find load module.");
+			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+			printf("%s\n",json_data);//输出字符串
+			cJSON_Delete(out);//清除结构体
 			print_flag = false;
 		}
 		break;
@@ -381,6 +463,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 					fprintf(stderr, /*printf(*/"Discover LKM-RootKits!!!  rootkit name is %s ! \n",module_name);
 				}
 			}
+			struct cJSON *out = json_format(e, "INSERT_MODULE && SYSCALL_TABLE_HOOK", "Discover LKM-Insert...");
+			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+			printf("%s\n",json_data);//输出字符串
+			cJSON_Delete(out);//清除结构体
 			print_flag = false;
 		}
 		break;
@@ -389,6 +475,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 			// using Kernel instruction operation function
 			fprintf(stderr, /*printf(*/"%-8s %-20s %-20s %-7d %-7d %-10ld  using Kernel instruction operation function!\n",
 					ts, "KHOOK", e->comm, e->pid, e->ppid, e->pid_ns);
+			struct cJSON *out = json_format(e, "KHOOK", "using Kernel instruction operation function.");
+			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+			printf("%s\n",json_data);//输出字符串
+			cJSON_Delete(out);//清除结构体
 			print_flag = false;
 		}
 		break;
@@ -397,6 +487,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 			// using Kernel KPROBE operation function
 			fprintf(stderr, /*printf(*/"%-8s %-20s %-20s %-7d %-7d %-10ld  using Kernel KPROBE framework!\n",
 					ts, "KPROBE", e->comm, e->pid, e->ppid, e->pid_ns);
+			struct cJSON *out = json_format(e, "KPROBE", "using Kernel KPROBE framework.");
+			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+			printf("%s\n",json_data);//输出字符串
+			cJSON_Delete(out);//清除结构体
 			print_flag = false;
 		} 
 		break;
@@ -417,6 +511,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 					printf("%-8s %-18s %-12s %-9s %-9s %-12s %s\n",
 				"TIME", "EVENT", "COMM", "PID", "PPID", "PID_NS" ,"DESCRIBE");
 				}
+				struct cJSON *out = json_format(e, "KILL", "check USER_ROOTKIT.");
+				char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+				printf("%s\n",json_data);//输出字符串
+				cJSON_Delete(out);//清除结构体
 			}
 		}
 		break;
@@ -467,6 +565,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 						if (!ret)
 							fprintf(stderr, /*printf(*/"container is: %s \n",
 							containerid);
+						struct cJSON *out = json_format(e, "MOUNT", "Sensitive directory mount.");
+						char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+						printf("%s\n",json_data);//输出字符串
+						cJSON_Delete(out);//清除结构体
 						print_flag = false;
 					}
 				}
@@ -483,6 +585,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 						if (!ret)
 							fprintf(stderr, /*printf(*/"container is: %s \n",
 							containerid);
+						struct cJSON *out = json_format(e, "MOUNT", "Sensitive directory mount.");
+						char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+						printf("%s\n",json_data);//输出字符串
+						cJSON_Delete(out);//清除结构体
 						print_flag = false;
 					}
 				}
@@ -548,6 +654,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 					if (!ret)
 						fprintf(stderr, /*printf(*/"container is: %s \n",
 						containerid);
+					struct cJSON *out = json_format(e, "File Open", "Sensitive File open, Container file escape attack .");
+					char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+					printf("%s\n",json_data);//输出字符串
+					cJSON_Delete(out);//清除结构体
 					print_flag = false;
 				}
 			}
@@ -708,6 +818,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 			if (!ret)
 				fprintf(stderr, /*printf(*/"container is: %s \n",
 				containerid);
+			struct cJSON *out = json_format(e, "EXEC", "Container Start, The privileged container start.");
+			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+			printf("%s\n",json_data);//输出字符串
+			cJSON_Delete(out);//清除结构体
 			print_flag = false;
 			break ;
 		}
@@ -722,6 +836,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 			if (!ret)
 				fprintf(stderr, /*printf(*/"container is: %s \n",
 				containerid);
+			struct cJSON *out = json_format(e, "EXEC", "Container Start, The container starts with all the capabilities set too large.");
+			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+			printf("%s\n",json_data);//输出字符串
+			cJSON_Delete(out);//清除结构体
 			print_flag = false;
 			break ;
 		}
@@ -855,5 +973,4 @@ cleanup:
 
 	return err < 0 ? -err : 0;
 }
-
 

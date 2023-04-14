@@ -6,6 +6,9 @@
         "fstream": "c",
         "functional": "c",
         "typeinfo": "c",
-        "string_view": "c"
+        "string_view": "c",
+        "hids.skel.h": "c",
+        "system_error": "c",
+        "cjson.h": "c"
     }
 }

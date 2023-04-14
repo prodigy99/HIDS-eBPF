@@ -21,6 +21,7 @@ ALL_LDFLAGS := $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 APPS = hids
 DLAPP = com_funaddr
+CJSON = cJSON
 
 CARGO ?= $(shell which cargo)
 ifeq ($(strip $(CARGO)),)
@@ -128,7 +129,7 @@ $(BZS_APPS): $(LIBBLAZESYM_OBJ)
 $(APPS): %: $(OUTPUT)/%.o $(LIBBPF_OBJ) | $(OUTPUT)
 	$(call msg,BINARY,$@)
 	gcc -c $(DLAPP).c -o $(OUTPUT)/$(DLAPP).o
-	$(Q)$(CC) $(CFLAGS) $^ $(ALL_LDFLAGS) $(OUTPUT)/$(DLAPP).o -lelf -ldl -lz -o $@
+	@$(Q)$(CC) $(CFLAGS) $(CJSON).c $^ $(ALL_LDFLAGS) $(OUTPUT)/$(DLAPP).o -lelf -ldl -lz -o $@
 # g++ $(CFLAGS) $^ $(ALL_LDFLAGS) $(OUTPUT)/$(DLAPP).o -lelf -ldl -lz -o $@
 
 # 在./output/下生成 .o
