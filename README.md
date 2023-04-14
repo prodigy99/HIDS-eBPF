@@ -38,6 +38,7 @@ Intrusion Detection System based on eBPF
 On Ubuntu/Debian:
 
 ```shell
+# 目前仅在Ubuntu20.04、22.04上进行测试
 $ apt install -y make clang llvm libelf1 libelf-dev zlib1g-dev
 # Getting the source code. Download the git repository 
 $ git clone https://github.com/haozhuoD/HIDS-eBPF.git
