@@ -280,9 +280,9 @@ static cJSON *json_format(const struct event *e, char *event_type_s, char *messa
 	// cJSON_AddNumberToObject(cap,"[1]",e->cap_effective[1]);
 	char str[64] = {0};
 	sprintf(str, "%x", e->cap_effective[0]); 
-	cJSON_AddStringToObject(cap, "[0]", str);
+	cJSON_AddStringToObject(cap, "[0] 0x", str);
 	sprintf(str, "%x", e->cap_effective[1]); 
- 	cJSON_AddStringToObject(cap, "[1]", str);
+ 	cJSON_AddStringToObject(cap, "[1] 0x", str);
 	cJSON_AddItemToObject(msg,"cap_effective",cap);		
 
 	cJSON_AddNumberToObject(msg,"sig",e->sig);
@@ -290,9 +290,9 @@ static cJSON *json_format(const struct event *e, char *event_type_s, char *messa
 	cJSON_AddNumberToObject(uid,"old_uid",e->old_uid); 		
  	cJSON_AddNumberToObject(uid,"new_uid",e->new_uid);
 	sprintf(str, "%x", e->old_uid); 
-	cJSON_AddStringToObject(uid, "old_uid", str);
+	cJSON_AddStringToObject(uid, "old_uid 0x", str);
 	sprintf(str, "%x", e->new_uid); 
- 	cJSON_AddStringToObject(uid, "new_uid", str);
+ 	cJSON_AddStringToObject(uid, "new_uid 0x", str);
 	cJSON_AddItemToObject(msg,"uid",uid);	
 
 	cJSON_AddStringToObject(msg, "comm", e->comm);
