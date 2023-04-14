@@ -12,6 +12,12 @@ Intrusion Detection System based on eBPF
 
 高效的信息交流机制：通过Map（本质上是一种共享内存的方式）进行数据传输，实现各个hook点、用户态与内核态的高效信息交互。
 
+# Branches
+
+* `main`               ------主分支，仅实现入侵检测功能
+* `lsm`           -------基于KRSI内核运行时检测，基于LSM hook点实现函数级的入侵阻断
+* `send_signal`          ------基于bpf_send_signal()辅助函数发送信号，实现进程级的入侵阻断
+
 # eBPF-HIDS source code
 
 ```shell
@@ -27,6 +33,37 @@ Intrusion Detection System based on eBPF
 ./demo/*.c #bpftrace跟踪脚本
 ./demo/*.txt #得到的系统调用序列
 ```
+
+# Install Dependencies
+On Ubuntu/Debian:
+
+```shell
+$ apt install -y make clang llvm libelf1 libelf-dev zlib1g-dev
+# Getting the source code. Download the git repository 
+$ git clone https://github.com/haozhuoD/HIDS-eBPF.git
+# Enter the folder
+$ cd HIDS-eBPF/hids 
+$ make          # 配置环境并编译
+```
+
+### Usage正常开发时使用
+
+```shell
+# Compile
+$ make hids   # 或者 make all  
+# 运行hids
+$ sudo ./hids
+
+# clear
+$ make clear  # 或者 make clean
+```
+其他可选：安装libbpf,参考 [libbpf](https://github.com/libbpf/libbpf)
+```shell
+# For Ubuntu20.10+
+sudo apt-get install -y  make clang llvm libelf-dev libbpf-dev bpfcc-tools libbpfcc-dev linux-tools-$(uname -r) linux-headers-$(uname -r)
+```
+
+# [Some-Examples](./examples.md)
 
 # Documents
 
@@ -51,43 +88,6 @@ Intrusion Detection System based on eBPF
 [docker容器运行时安全早期学习文档](./doc/docker容器运行时安全.md)
 
 [ebpf rootkit初步探索](./demo/ebpf-rootkit.c)
-
-
-# Branches
-
-* `main`               ------主分支，仅实现检查功能
-* `lsm`           -------基于KRSI内核运行时检测，基于LSM hook点实现函数级的入侵阻断
-* `send_signal`          ------基于bpf_send_signal()辅助函数发送信号，实现进程级的入侵阻断
-
-# Install Dependencies (待测试)
-On Ubuntu/Debian, you need:
-
-```shell
-$ apt install clang libelf1 libelf-dev zlib1g-dev
-```
-
-可选：安装libbpf,参考 [libbpf](https://github.com/libbpf/libbpf)
-```shell
-# For Ubuntu20.10+
-sudo apt-get install -y  make clang llvm libelf-dev libbpf-dev bpfcc-tools libbpfcc-dev linux-tools-$(uname -r) linux-headers-$(uname -r)
-```
-
-# Usage
-
-```shell
-# Getting the source code. Download the git repository 
-$ git clone https://github.com/haozhuoD/HIDS-eBPF.git
-# Enter the folder
-$ cd hids 
-# Compile
-$ make hids   # 或者 make all  
-# 运行hids
-$ sudo ./hids
-
-# clear
-$ make clear  # 或者 make clean
-```
-# [Some-Examples](./examples.md)
 
 # Hook points
 
