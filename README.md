@@ -59,18 +59,33 @@ Intrusion Detection System based on eBPF
 * `lsm`           -------基于KRSI内核运行时检测，基于LSM hook点实现函数级的入侵阻断
 * `send_signal`          ------基于bpf_send_signal()辅助函数发送信号，实现进程级的入侵阻断
 
+# Install Dependencies (待测试)
+On Ubuntu/Debian, you need:
+
+```shell
+$ apt install clang libelf1 libelf-dev zlib1g-dev
+```
+
+可选：安装libbpf,参考 [libbpf](https://github.com/libbpf/libbpf)
+```shell
+# For Ubuntu20.10+
+sudo apt-get install -y  make clang llvm libelf-dev libbpf-dev bpfcc-tools libbpfcc-dev linux-tools-$(uname -r) linux-headers-$(uname -r)
+```
+
 # Usage
 
 ```shell
+# Getting the source code. Download the git repository 
+$ git clone https://github.com/haozhuoD/HIDS-eBPF.git
 # Enter the folder
-cd hids 
+$ cd hids 
 # Compile
-make hids   # 或者 make all  
+$ make hids   # 或者 make all  
 # 运行hids
-sudo ./hids
+$ sudo ./hids
 
 # clear
-make clear  # 或者 make clean
+$ make clear  # 或者 make clean
 ```
 # [Some-Examples](./examples.md)
 
