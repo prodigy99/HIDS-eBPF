@@ -399,6 +399,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 			fprintf(stderr, /*printf(*/"%-8s %-20s %-20s %-7d %-7d %-10ld  ELF no file attacked ! uname:%s \n",
 			ts, "SYS_ENTER_MEMFD_CREATE", e->comm, e->pid, e->ppid, e->pid_ns, e->filename);
 			struct cJSON *out = json_format(e, "SYS_ENTER_MEMFD_CREATE", "Find ELF no file attacked.");
+			cJSON_AddStringToObject(out, "uname", e->filename);
 			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
 			printf("%s\n",json_data);//输出字符串
 			cJSON_Delete(out);//清除结构体
@@ -421,6 +422,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 				ts, "MODULE_LOAD", e->comm, e->pid, e->ppid, e->pid_ns, module_name);
 			// bpf_map__lookup_elem(pid_conid_map_u, &pid, sizeof(pid), containerid, MAX_PATH_NAME_SIZE, BPF_ANY);
 			struct cJSON *out = json_format(e, "MODULE_LOAD", "Find load module.");
+			cJSON_AddStringToObject(out, "module-name", module_name);
 			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
 			printf("%s\n",json_data);//输出字符串
 			cJSON_Delete(out);//清除结构体
@@ -434,6 +436,11 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 			unsigned long syscalladdr;
 			// bpf_map__lookup_elem(syscall_addrs_u, &idx, sizeof(idx), &syscalladdr, sizeof(syscalladdr), BPF_ANY);
 			// fprintf(stderr, "bpf_map__lookup_elem syscalltable[%d] : %lx \n",idx,syscalladdr);
+			struct cJSON *behavior  = cJSON_CreateObject();				//创建一个对象
+			// cJSON_AddItemToObject(msg,"uid",uid);
+			// cJSON_AddStringToObject(behavior, "syscall out of range IDs", str);	
+			 /* 添加一个数组类型的JSON数据(添加一个链表节点) */
+			cJSON* sys_ids = cJSON_CreateArray();
 			for (int i = 0; i < 335; i++)
 			{
 				idx = i;
@@ -445,11 +452,12 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 					DEBUG("syscalladdr out of range \n");
 					fprintf(stderr, /*printf(*/"%-8s %-20s %-20s %-7d %-7d %-10ld syscall[%d]: be changed. May have been attacked by kernel rootkit !\n",
 						ts, "SYSCALL_TABLE_HOOK", e->comm, e->pid, e->ppid, e->pid_ns, idx);
-					
+					cJSON_AddItemToArray(sys_ids,cJSON_CreateNumber(idx));
 					// e->event_type = SYSCALL_TABLE_HOOK;
 				}
 				// bpf_map__update_elem(skel->maps.ksymbols_map,&syscalltable,sizeof(syscalltable),systable_p,sizeof(*systable_p),BPF_ANY);
 			}
+			cJSON_AddItemToObject(behavior, "syscall addr out of range IDs", sys_ids);
 			// print module name
 			int pid = e->pid;
 			char module_name[MAX_KSYM_NAME_SIZE]  = {0};
@@ -461,9 +469,12 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 				// fprintf(stderr, /*printf(*/"rootkit list %s ! \n",lkm_sensitive_names[i]);
 				if (strncmp(module_name,lkm_sensitive_names[i], MAX_KSYM_NAME_SIZE) == 0){
 					fprintf(stderr, /*printf(*/"Discover LKM-RootKits!!!  rootkit name is %s ! \n",module_name);
+					cJSON_AddStringToObject(behavior, "LKM-RootKit's", module_name);	
 				}
 			}
-			struct cJSON *out = json_format(e, "INSERT_MODULE && SYSCALL_TABLE_HOOK", "Discover LKM-Insert...");
+			struct cJSON *out = json_format(e, "INSERT_MODULE", "Discover LKM-Insert...");
+			cJSON_AddStringToObject(out, "module-name", module_name);
+			cJSON_AddItemToObject(out, "module-behavior", behavior);
 			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
 			printf("%s\n",json_data);//输出字符串
 			cJSON_Delete(out);//清除结构体
@@ -566,6 +577,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 							fprintf(stderr, /*printf(*/"container is: %s \n",
 							containerid);
 						struct cJSON *out = json_format(e, "MOUNT", "Sensitive directory mount.");
+						cJSON_AddStringToObject(out, "container-id", containerid);
 						char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
 						printf("%s\n",json_data);//输出字符串
 						cJSON_Delete(out);//清除结构体
@@ -586,6 +598,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 							fprintf(stderr, /*printf(*/"container is: %s \n",
 							containerid);
 						struct cJSON *out = json_format(e, "MOUNT", "Sensitive directory mount.");
+						cJSON_AddStringToObject(out, "container-id", containerid);
 						char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
 						printf("%s\n",json_data);//输出字符串
 						cJSON_Delete(out);//清除结构体
@@ -655,6 +668,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 						fprintf(stderr, /*printf(*/"container is: %s \n",
 						containerid);
 					struct cJSON *out = json_format(e, "File Open", "Sensitive File open, Container file escape attack .");
+					cJSON_AddStringToObject(out, "container-id", containerid);
 					char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
 					printf("%s\n",json_data);//输出字符串
 					cJSON_Delete(out);//清除结构体
@@ -819,6 +833,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 				fprintf(stderr, /*printf(*/"container is: %s \n",
 				containerid);
 			struct cJSON *out = json_format(e, "EXEC", "Container Start, The privileged container start.");
+			cJSON_AddStringToObject(out, "container-id", containerid);
 			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
 			printf("%s\n",json_data);//输出字符串
 			cJSON_Delete(out);//清除结构体
@@ -837,6 +852,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 				fprintf(stderr, /*printf(*/"container is: %s \n",
 				containerid);
 			struct cJSON *out = json_format(e, "EXEC", "Container Start, The container starts with all the capabilities set too large.");
+			cJSON_AddStringToObject(out, "container-id", containerid);
 			char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
 			printf("%s\n",json_data);//输出字符串
 			cJSON_Delete(out);//清除结构体
@@ -872,6 +888,10 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 #ifdef NORMAL
 		printf("%-8s %-20s %-20s %-7d %-7d %-10ld %s\n",
 	       	ts, "NORMAL", e->comm, e->pid, e->ppid, e->pid_ns,e->filename);
+		struct cJSON *out = json_format(e, "NORMAL", "Normal Tracing.");
+		char *json_data = cJSON_Print(out);	//JSON数据结构转换为JSON字符串
+		printf("%s\n",json_data);//输出字符串
+		cJSON_Delete(out);//清除结构体
 #endif
 	}
 
