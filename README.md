@@ -39,11 +39,12 @@ On Ubuntu/Debian:
 
 ```shell
 # 目前仅在Ubuntu20.04、22.04上进行测试
-$ apt install -y make clang llvm libelf1 libelf-dev zlib1g-dev
+$ apt install -y make gcc clang llvm libelf1 libelf-dev zlib1g-dev
 # Getting the source code. Download the git repository 
 $ git clone https://github.com/haozhuoD/HIDS-eBPF.git
 # Enter the folder
 $ cd HIDS-eBPF/hids 
+$ make clean    # 清除仓库中旧编译的bpf相关内容
 $ make          # 配置环境并编译
 ```
 
