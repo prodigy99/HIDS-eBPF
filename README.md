@@ -35,11 +35,21 @@ Intrusion Detection System based on eBPF
 ```
 
 # Install Dependencies
+
+本项目使用到CORE特性，若想在本地编译或者运行该项目，内核需开启CONFIG_DEBUG_INFO_BTF=y编译配置，内核相关的支持情况参见[supported-distros](https://github.com/aquasecurity/btfhub/blob/main/docs/supported-distros.md)。推荐在默认启用CONFIG_DEBUG_INFO_BTF的高版本内核运行
+
+在低版本未开启CONFIG_DEBUG_INFO_BTF编译配置运行该项目有以下两种方式
+- 配置CONFIG_DEBUG_INFO_BTF=y，重新编译内核
+- 基于BTFHub或其他来源收集不同Linux内核发行版的BTF源文件，使用BTFGen生成精简版的BTF文件。具体内容参考：
+    - [BTFGen: 让 eBPF 程序可移植发布更近一步](https://developer.aliyun.com/article/899354#:~:text=BTF%20%E4%BF%A1%E6%81%AF%E7%94%B1%E5%86%85%E6%A0%B8%E6%9C%AC%E8%BA%AB%E6%8F%90%E4%BE%9B%E7%9A%84%EF%BC%8C%E8%BF%99%E9%9C%80%E8%A6%81%E5%9C%A8%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91%E6%97%B6%E8%AE%BE%E7%BD%AE%20CONFIG_DEBUG_INFO_BTF%3Dy%20%E9%80%89%E9%A1%B9%20%E3%80%82%20%E8%AF%A5%E9%80%89%E9%A1%B9%20%E5%9C%A8Linux%20%E5%86%85%E6%A0%B8,%E4%B8%AD%E5%BC%95%E5%85%A5%E7%9A%84%EF%BC%8C%E8%AE%B8%E5%A4%9A%E6%B5%81%E8%A1%8C%E7%9A%84%20Linux%20%E5%8F%91%E8%A1%8C%E7%89%88%E5%9C%A8%E5%85%B6%E5%90%8E%E7%9A%84%E9%83%A8%E5%88%86%E5%86%85%E6%A0%B8%E7%89%88%E6%9C%AC%E6%89%8D%E9%BB%98%E8%AE%A4%E5%90%AF%E7%94%A8%E3%80%82%20%E8%BF%99%E6%84%8F%E5%91%B3%E7%9D%80%E6%9C%89%E5%BE%88%E5%A4%9A%E7%94%A8%E6%88%B7%E8%BF%90%E8%A1%8C%E7%9A%84%E5%86%85%E6%A0%B8%E5%B9%B6%E6%B2%A1%E6%9C%89%E5%AF%BC%E5%87%BA%20BTF%20%E4%BF%A1%E6%81%AF%EF%BC%8C%E5%9B%A0%E6%AD%A4%E4%B8%8D%E8%83%BD%E4%BD%BF%E7%94%A8%E5%9F%BA%E4%BA%8E%20CO-RE%20%E7%9A%84%E5%B7%A5%E5%85%B7%E3%80%82)   
+    - [btfhub官方仓库](https://github.com/aquasecurity/btfhub) 
+    - [BTF源文件仓库](https://github.com/aquasecurity/btfhub-archive) 
+
 On Ubuntu/Debian:
 
 ```shell
 # 目前仅在Ubuntu20.04、22.04上进行测试
-$ apt install -y make gcc clang llvm libelf1 libelf-dev zlib1g-dev
+$ apt install -y git make gcc clang llvm libelf1 libelf-dev zlib1g-dev
 # Getting the source code. Download the git repository 
 $ git clone https://github.com/haozhuoD/HIDS-eBPF.git
 # Enter the folder
@@ -59,11 +69,7 @@ $ sudo ./hids
 # clear
 $ make clear  # 或者 make clean
 ```
-其他可选：安装libbpf,参考 [libbpf](https://github.com/libbpf/libbpf)
-```shell
-# For Ubuntu20.10+
-sudo apt-get install -y  make clang llvm libelf-dev libbpf-dev bpfcc-tools libbpfcc-dev linux-tools-$(uname -r) linux-headers-$(uname -r)
-```
+
 
 # [Some-Examples](./examples.md)
 
@@ -138,5 +144,11 @@ sudo apt-get install -y  make clang llvm libelf-dev libbpf-dev bpfcc-tools libbp
 * [√] Nofile attack 无文件攻击文档工作。示例截图、完善原理文档
 * [√] 完善文件的fop检查，相关内容bpftrace-hook-demo仓库kern_hook_demo中的security_file_permission
 * [ ] fop-check示例寻找（注意相关注释中的链接），运行结果验证
+
+其他可选：安装libbpf,参考 [libbpf](https://github.com/libbpf/libbpf)
+```shell
+# For Ubuntu20.10+
+sudo apt-get install -y  make clang llvm libelf-dev libbpf-dev bpfcc-tools libbpfcc-dev linux-tools-$(uname -r) linux-headers-$(uname -r)
+```
 
 Complete documentation... 
