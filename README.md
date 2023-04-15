@@ -36,7 +36,7 @@ Intrusion Detection System based on eBPF
 
 # Install Dependencies
 
-本项目使用到CORE特性，若想在本地编译或者运行该项目，内核需开启CONFIG_DEBUG_INFO_BTF=y编译配置，内核相关的支持情况参见[supported-distros](https://github.com/aquasecurity/btfhub/blob/main/docs/supported-distros.md)。推荐在默认启用CONFIG_DEBUG_INFO_BTF的高版本内核运行
+本项目使用到CORE特性。仓库自带vmlinux.h，所以直接支持本地编译。但若想在本地环境运行该项目，内核需开启CONFIG_DEBUG_INFO_BTF=y编译配置，内核相关的支持情况参见[supported-distros](https://github.com/aquasecurity/btfhub/blob/main/docs/supported-distros.md)。推荐在默认启用CONFIG_DEBUG_INFO_BTF的高版本内核运行
 
 在低版本未开启CONFIG_DEBUG_INFO_BTF编译配置运行该项目有以下两种方式
 - 配置CONFIG_DEBUG_INFO_BTF=y，重新编译内核
