@@ -9,7 +9,7 @@
 #include "hids.h"
 #include "config.h"
 #include "hids.skel.h"
-#include "cJSON.h"
+#include "cjson/cJSON.h"
 
 // com_funaddr.c 中的库函数
 int do_so_check(void);

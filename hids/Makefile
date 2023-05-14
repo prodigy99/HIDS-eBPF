@@ -21,7 +21,7 @@ ALL_LDFLAGS := $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 APPS = hids
 DLAPP = com_funaddr
-CJSON = cJSON
+CJSON = cjson/cJSON
 
 CARGO ?= $(shell which cargo)
 ifeq ($(strip $(CARGO)),)

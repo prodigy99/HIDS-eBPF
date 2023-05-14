@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <link.h>
 #include <dlfcn.h>
-#include "cJSON.h"
+#include "cjson/cJSON.h"
 
 // add your own libc symbols to check if you wish
 static const char *symbols[] = {
