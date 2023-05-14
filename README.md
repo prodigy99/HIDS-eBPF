@@ -128,6 +128,55 @@ $ make clear  # 或者 make clean
 
 </p></details>
 
+# 代码统计
+```shell
+dhz@ubuntu:~/workspace/HIDS-eBPF$ cloc ./hids/ --exclude-dir=.output,cjson
+       7 text files.
+       7 unique files.                              
+       1 file ignored.
+
+github.com/AlDanial/cloc v 1.82  T=0.02 s (367.2 files/s, 134567.3 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+C                                3            205            626           1240
+C/C++ Header                     3             44              9            294
+make                             1             28             26             93
+-------------------------------------------------------------------------------
+SUM:                             7            277            661           1627
+-------------------------------------------------------------------------------
+dhz@ubuntu:~/workspace/HIDS-eBPF$ cloc ./demo/
+       8 text files.
+       8 unique files.                              
+       3 files ignored.
+
+github.com/AlDanial/cloc v 1.82  T=0.01 s (490.1 files/s, 34206.0 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+C                                5             33            190            126
+-------------------------------------------------------------------------------
+SUM:                             5             33            190            126
+-------------------------------------------------------------------------------
+dhz@ubuntu:~/workspace/HIDS-eBPF$ cloc ./no_file_attack/
+       2 text files.
+       2 unique files.                              
+       0 files ignored.
+
+github.com/AlDanial/cloc v 1.82  T=0.01 s (158.8 files/s, 1190.8 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Python                           1              0              0              8
+C                                1              1              0              6
+-------------------------------------------------------------------------------
+SUM:                             2              1              0             14
+-------------------------------------------------------------------------------
+
+```
+
+
+
 # Reference
 使用的库与参考的代码实现
 
@@ -137,7 +186,7 @@ $ make clear  # 或者 make clean
 
 # todo
 
-#### todolist
+<!-- #### todolist
 
 * [ ] 检测中断向量表idt_table 0X80号软中断系统调用服务表项的修改。和系统调用表检查类似，检查idt_table[0X80]的地址值是否变化或者超出范围
 * [√] 容器逃逸相关检测。示例截图、完善原理文档
@@ -149,6 +198,6 @@ $ make clear  # 或者 make clean
 ```shell
 # For Ubuntu20.10+
 sudo apt-get install -y  make clang llvm libelf-dev libbpf-dev bpfcc-tools libbpfcc-dev linux-tools-$(uname -r) linux-headers-$(uname -r)
-```
+``` -->
 
 Complete documentation... 
